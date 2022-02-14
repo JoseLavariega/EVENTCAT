@@ -20,18 +20,23 @@ class ViconPreprocessor:
         self.quat_z = []
         self.quat_w = []
 
+        self.ros_times = []
+        self.ros_quats = []
+        self.ros_pos   = []
+
         self.last_quat = np.array([0,0,0,0]) # x y z w 
         self.last_pos  = np.array([0,0,0])   # x y z 
 
         self.last_time    = 0.0 #time
         self.current_time = 0.0
 
-    def linear_slerp(self, current_pos, des_time): 
+    def linear_slerp(self, high_pos, low_pos, high_time, low_time, des_time): 
 
-        num   = np.multiply(np.subtract(current_pos, self.last_pos),(des_time - self.last_time))
-        denum = self.current_time - self.last_time
+        num   = np.multiply(np.subtract(high_pos, low_pos),(des_time - low_time))
+        denum = high_time - low_time
 
-        return np.asarray(np.add(np.divide(num, denum), self.last_pos))
+        return np.asarray(np.add(np.divide(num, denum), low_time))
+
     
     def calc_Omega(quat): #x y z w
         vector_norm = math.sqrt(quat[0]**2 + quat[1]**2 + quat[2]**2)
@@ -50,12 +55,12 @@ class ViconPreprocessor:
         return powed_quat
 
 
-    def quaternion_slerp(self, current_quat, des_time):
+    def quaternion_slerp(self, high_quat, low_quat, high_time, low_time, des_time):
 
-        quat_t1 = self.last_quat
-        quat_t2 = current_quat
+        quat_t1 = low_quat
+        quat_t2 = high_quat
 
-        t_hat = (des_time - self.last_time)/(self.current_time - self.last_time) # between 0 and 1
+        t_hat = (des_time - self.last_time)/(high_time- low_time) # between 0 and 1
 
         quat_t1_omega = self.calc_Omega(quat_t1)
         quat_t1_m1    = self.quat_pow(quat_t1, quat_t1_omega, -1)
@@ -96,23 +101,52 @@ class ViconPreprocessor:
             current_time = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
             rosbag_time = current_time - ROSBAG_START
 
-            if(rosbag_time >= PREVIOUS_FRAME * RATE_HERTZ):
-                p_x = msg.transform.translation.x
-                p_y = msg.transform.translation.y
-                p_z = msg.transform.translation.z
+            self.ros_times.append(rosbag_time)
+            self.ros_quats.append(np.array([msg.transform.rotation.x, msg.transform.rotation.y, 
+                                           msg.transform.rotation.z, msg.transform.rotation.w]))
+            self.ros_pos.append(np.array([msg.transform.translation.x, 
+                                          msg.transform.translation.y, 
+                                          msg.transform.rotation.z]))
 
-                q_x = msg.transform.rotation.x
-                q_y = msg.transform.rotation.y
-                q_z = msg.transform.rotation.z
-                q_w = msg.transform.rotation.w
 
-                #pos_x.append(p_x)
-                #pos_y.append(p_y)
-                #pos_z.append(p_z)
-                #quat_x.append(q_x)
-                #quat_x.append(q_y)
-                #quat_x.append(q_z)
-                #quat_w.append(q_w)
+    def build_interpolation_dataset(self, imu_times):
+        high_index = 1
+        low_index  = 0
+        for time in imu_times: #expected to be more than the EC times
+            
+            if (time<self.ros_times[high_index] and time>=self.ros_times[low_index]): 
+                low_quat = self.ros_quats[low_index]
+                high_quat = self.ros_quats[high_index]
+
+                low_pos = self.ros_pos[low_index]
+                high_pos= self.ros_pos[high_index]
+
+                low_time = self.ros_times[low_index]
+                high_time = self.ros_times[high_index]
+
+                point_interp = self.linear_slerp(high_pos, low_pos, high_time, low_time, time)
+                quat_interp  = self.quaternion_slerp(high_quat, low_quat, high_time, low_time, time)
+
+                self.VICON_MOVIE.append([point_interp, quat_interp,time])
+                continue
+            else:
+                high_index += 1
+                low_index  += 1
+
+                low_quat = self.ros_quats[low_index]
+                high_quat = self.ros_quats[high_index]
+
+                low_pos = self.ros_pos[low_index]
+                high_pos= self.ros_pos[high_index]
+
+                low_time = self.ros_times[low_index]
+                high_time = self.ros_times[high_index]
+
+                point_interp = self.linear_slerp(high_pos, low_pos, high_time, low_time, time)
+                quat_interp  = self.quaternion_slerp(high_quat, low_quat, high_time, low_time, time)
+
+                self.VICON_MOVIE.append([point_interp, quat_interp,time])
+                continue
 
 
 
@@ -124,3 +158,5 @@ if __name__ == '__main__':
     PREVIOUS_FRAME = 1
     my_Vicon = ViconPreprocessor()
     FRAMES_SECOND = 500
+
+    my_Vicon.vicon_rosbag_data( bag, FRAMES_SECOND)
