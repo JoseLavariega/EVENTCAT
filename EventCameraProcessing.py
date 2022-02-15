@@ -279,7 +279,7 @@ class EventCameraPreprocessor:
                 
 
                 if(rosbag_time > PREVIOUS_FRAME*RATE_HERTZ):
-                    #print(PREVIOUS_FRAME)
+                    print(PREVIOUS_FRAME)
                     #print(PREVIOUS_FRAME*RATE_HERTZ)
 
                     events_in_frame = len(self.network_corner_events)
@@ -298,7 +298,7 @@ class EventCameraPreprocessor:
         #print(self.CORNER_EVENTS_MOVIE)
         #print(self.CORNER_EVENTS_MOVIE[1])
         #print(self.CORNER_EVENTS_MOVIE[100])
-        bag.close()
+        #$bag.close()
 
         
 

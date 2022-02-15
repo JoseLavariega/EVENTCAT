@@ -15,3 +15,13 @@ if __name__ == '__main__':
     my_imu   = IMUPreprocessor()
     my_vicon = ViconPreprocessor()
     
+    FRAMERATE = 500
+    my_imu.rosbag_populate_network_imu(bag,FRAMERATE)
+    my_ec.rosbag_populate_network_frames(bag,FRAMERATE)
+    my_vicon.vicon_rosbag_data(bag,FRAMERATE)
+    
+    bag.close()
+    my_vicon.build_interpolation_dataset(my_imu.times)
+
+
+    print('Done!')

@@ -38,11 +38,11 @@ class ViconPreprocessor:
         return np.asarray(np.add(np.divide(num, denum), low_time))
 
     
-    def calc_Omega(quat): #x y z w
+    def calc_Omega(self, quat): #x y z w
         vector_norm = math.sqrt(quat[0]**2 + quat[1]**2 + quat[2]**2)
         return math.atan2(vector_norm, quat[3])
 
-    def quat_pow(quat, Omega, pow):
+    def quat_pow(self, quat, Omega, pow):
         quat_v = [quat[0]/(1.0*math.sin(Omega)), 
                   quat[1]/(1.0*math.sin(Omega)),
                   quat[2]/(1.0*math.sin(Omega))] 
@@ -57,12 +57,13 @@ class ViconPreprocessor:
 
     def quaternion_slerp(self, high_quat, low_quat, high_time, low_time, des_time):
 
-        quat_t1 = low_quat
-        quat_t2 = high_quat
+        quat_t1 = np.array(low_quat)
+        quat_t2 = np.array(high_quat)
 
-        t_hat = (des_time - self.last_time)/(high_time- low_time) # between 0 and 1
+        print(quat_t1)
+        t_hat = (des_time - low_time)/(high_time- low_time) # between 0 and 1
 
-        quat_t1_omega = self.calc_Omega(quat_t1)
+        quat_t1_omega = self.calc_Omega(quat_t1) #TODO: look into why it says it has 2 positional arguments
         quat_t1_m1    = self.quat_pow(quat_t1, quat_t1_omega, -1)
 
         qt1_inv_qt2  = self.quat_mul(quat_t1_m1, quat_t2)
@@ -75,7 +76,7 @@ class ViconPreprocessor:
         return est_quat
 
 
-    def quat_mul(quat_a, quat_b):
+    def quat_mul(self, quat_a, quat_b):
         xa, ya, za, wa = quat_a
         xb, yb, zb, wb = quat_b
 
