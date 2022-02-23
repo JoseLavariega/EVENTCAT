@@ -29,7 +29,7 @@ class IMUPreprocessor:
         RATE_HERTZ = 1./FRAMERATE
 
         for topic, msg, t in bag.read_messages(topics=['/dvs/imu']):
-            if(PREVIOUS_FRAME >= 750):
+            if(PREVIOUS_FRAME >= 1500):
                 break
 
             if (counter == 0):
@@ -121,10 +121,3 @@ if __name__ == '__main__':
 
     plt.show()
 
-
-
-
-
-
-
-        

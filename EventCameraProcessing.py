@@ -259,7 +259,7 @@ class EventCameraPreprocessor:
 
 
         for topic, msg, t in bag.read_messages(topics=['/dvs/events']):
-            if(PREVIOUS_FRAME >= 750):
+            if(PREVIOUS_FRAME >= 1500):
                 break
 
             if (counter == 0): # Assign an initial timestamp to the bag
