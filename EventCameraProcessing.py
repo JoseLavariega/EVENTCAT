@@ -259,8 +259,8 @@ class EventCameraPreprocessor:
 
 
         for topic, msg, t in bag.read_messages(topics=['/dvs/events']):
-            if(PREVIOUS_FRAME >= 1500):
-                break
+            #if(PREVIOUS_FRAME >= 100):
+            #    break
 
             if (counter == 0): # Assign an initial timestamp to the bag
                 ROSBAG_START = msg.header.stamp.secs+msg.header.stamp.nsecs*0.000000001
@@ -408,7 +408,7 @@ if __name__ == '__main__':
         ax1.scatter(cnr_frame[0], cnr_frame[1], color = 'red', s=2)
         ax1.scatter(cnr_frame[2], cnr_frame[3], color = 'black', s=2)
 
-        plt.pause(0.1)
+        plt.pause(0.002)
 
         ax1.clear()
         

@@ -11,6 +11,7 @@ import math
 class ViconPreprocessor:
     def __init__ (self):
         self.VICON_MOVIE = []
+        self.VICON_ROSBAG_MOVIE = []
         self.START_TIME  = 0.0
 
         #initialization
@@ -113,8 +114,8 @@ class ViconPreprocessor:
         RATE_HERTZ = 1./FRAMERATE
         
         for topic, msg, t in bag.read_messages(topics=['/vicon/event_camera_body/event_camera_body']):
-            if(PREVIOUS_FRAME >= 1500):
-                break
+            #if(PREVIOUS_FRAME >= 100):
+            #    break
 
             if(counter == 0):
                 ROSBAG_START = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
@@ -254,7 +255,7 @@ class ViconPreprocessor:
         #noisy_positions = self.interp_points.copy()
 
 
-        noisy_positions = self.lin_moving_average(self.interp_points.copy(),4)
+        noisy_positions = self.lin_moving_average(self.interp_points.copy(),5)
         # calculate all differencess locally
         for i in range(1,len(noisy_positions)):
             local_velocity = (noisy_positions[i] - noisy_positions[i-1])/(times[i]-times[i-1])
@@ -264,7 +265,7 @@ class ViconPreprocessor:
         self.est_velocities_local_differentiation = np.asarray(self.est_velocities_local_differentiation)
 
         # implement a moving average
-        self.est_velocities_moving_avg = self.lin_moving_average(self.est_velocities_local_differentiation, 4)
+        self.est_velocities_moving_avg = self.lin_moving_average(self.est_velocities_local_differentiation, 5)
 
 
     def kf_velestimator(self):
@@ -295,17 +296,17 @@ class ViconPreprocessor:
 
         self.noisy_quat_rates = np.array(noisy_quat_rates)
         #maybe smooth over noisy quat rates?
-        self.smoothed_quat_rates = np.array(self.quat_moving_average(self.noisy_quat_rates.copy(),15))
+        self.smoothed_quat_rates = np.array(self.quat_moving_average(self.noisy_quat_rates.copy(),10))
 
         for i in range(0, len(self.smoothed_quat_rates)):
             body_matrix = self.rate_matrix_body(noisy_quats[i+1])
             world_matrix = self.rate_matrix_world(noisy_quats[i+1])
             quaternion = self.convert_quaternion_to_useful(noisy_quats[i+1])
 
-            print(np.shape(body_matrix))
-            print(np.shape(self.smoothed_quat_rates[i].T))
+            #print(np.shape(body_matrix))
+            #print(np.shape(self.smoothed_quat_rates[i].T))
 
-            print(body_matrix)
+            #print(body_matrix)
 
             #smoothed_quat_rates[i].reshape((4,1))
             
@@ -327,7 +328,12 @@ class ViconPreprocessor:
         self.unsmooth_ang_rate_world = np.array(self.unsmooth_ang_rate_world)
         self.unsmooth_ang_rate_body  = np.array(self.unsmooth_ang_rate_body)
 
-        
+    def build_vicon_data_movie(self):
+        self.VICON_ROSBAG_MOVIE = [np.asarray(self.interp_times), 
+                                    np.asarray(self.interp_quat),
+                                    np.asarray(self.ang_rate_body),
+                                    np.asarray(self.est_velocities_moving_avg)]
+    
 
 
 
