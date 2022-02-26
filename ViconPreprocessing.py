@@ -2,7 +2,7 @@ from numpy.lib.function_base import _quantile_unchecked
 from EventCameraProcessing import EventCameraPreprocessor
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.signal as sps
+#import scipy.signal as sps
 import rosbag
 import time
 import math
