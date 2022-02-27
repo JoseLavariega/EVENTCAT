@@ -163,8 +163,15 @@ class ViconPreprocessor:
                 self.interp_quat.append(quat_interp)
                 
             else:
-                high_index += 1
-                low_index  += 1
+                if (high_index + 1 < len(self.ros_quats)):
+                    high_index += 1
+                
+                    low_index  += 1
+                else:
+                    high_index = high_index
+                    low_index = low_index
+                    print(high_index)
+                    print(low_index)
 
                 low_quat = self.ros_quats[low_index]
                 high_quat = self.ros_quats[high_index]
