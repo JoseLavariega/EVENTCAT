@@ -66,7 +66,7 @@ if __name__ == '__main__':
         pk.dump(my_vicon2.VICON_ROSBAG_MOVIE, open('rosbag2_vicon','wb')) 
         pk.dump(my_movie_FULL2, open('rosbag2_full','wb'))
 
-
+        
 
         bag3 = rosbag.Bag('/home/joselavariega/bagfiles/test_1_facing_front.bag') #6 seconds
 
@@ -496,7 +496,7 @@ if __name__ == '__main__':
         print('Done!')
 
 
-
+        
 
 
 
