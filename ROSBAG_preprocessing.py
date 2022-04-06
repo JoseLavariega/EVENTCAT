@@ -26,12 +26,13 @@ if __name__ == '__main__':
         my_imu1.rosbag_populate_network_imu(bag1,FRAMERATE)
         my_ec1.rosbag_populate_network_frames(bag1,FRAMERATE)
         my_vicon1.vicon_rosbag_data(bag1,FRAMERATE)
-
+ 
         bag1.close()
         my_vicon1.build_interpolation_dataset(my_imu1.times)
 
-        my_vicon1.velocity_estimator()
         my_vicon1.ang_rate_estimator()
+        my_vicon1.velocity_estimator()
+        
         my_vicon1.build_vicon_data_movie()
 
         my_movie_FULL1 = [my_ec1.CORNER_EVENTS_MOVIE, my_imu1.IMU_MOVIE, my_vicon1.VICON_ROSBAG_MOVIE]
@@ -41,6 +42,8 @@ if __name__ == '__main__':
         pk.dump(my_vicon1.VICON_ROSBAG_MOVIE, open('rosbag1_vicon','wb')) 
         pk.dump(my_movie_FULL1, open('rosbag1_full','wb')) 
 
+
+        """
         bag2 = rosbag.Bag('/home/joselavariega/bagfiles/test_1_facing_down.bag') #11 seconds
 
         my_ec2    = EventCameraPreprocessor()
@@ -494,6 +497,7 @@ if __name__ == '__main__':
 
 
         print('Done!')
+        """
 
 
         

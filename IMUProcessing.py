@@ -29,8 +29,8 @@ class IMUPreprocessor:
         RATE_HERTZ = 1./FRAMERATE
 
         for topic, msg, t in bag.read_messages(topics=['/dvs/imu']):
-            #if(PREVIOUS_FRAME >= 100):
-            #    break
+            if(PREVIOUS_FRAME >= 100):
+               break
 
             if (counter == 0):
                 ROSBAG_START = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
